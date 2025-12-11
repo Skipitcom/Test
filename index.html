@@ -34,41 +34,48 @@
             flex-direction: column;
         }
 
+        /* Compact Header */
         h1 {
             text-align: center;
             margin: 5px 0;
             font-size: 1.5rem;
+            /* Reduced from 2.5rem */
         }
 
         #online-count {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 5px;
             color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
-            font-weight: 500;
+            font-size: 0.9rem;
         }
 
+        #status {
+            text-align: center;
+            margin: 5px 0 10px 0;
+            font-size: 1rem;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Flexible Video Container */
         .video-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            display: flex;
+            flex: 1;
+            /* Take all remaining space */
+            gap: 10px;
+            min-height: 0;
+            /* Critical for flex scrolling */
+            margin-bottom: 10px;
         }
 
-        /* Mobile Layout: Stack Videos Vertically */
-        @media (max-width: 768px) {
-            .video-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: 1fr 1fr;
-            }
-
-            video {
-                height: 50vh;
-            }
-
-            h1 {
-                font-size: 1.8rem;
-            }
+        .video-wrapper {
+            position: relative;
+            flex: 1;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         video {
@@ -81,19 +88,23 @@
             transform: scaleX(-1);
         }
 
-        .video-wrapper {
-            position: relative;
-            flex: 1;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
+        .label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 10;
         }
 
         .controls {
             display: flex;
             justify-content: center;
             gap: 15px;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
+            /* Minimal padding at bottom */
         }
 
         button {
@@ -106,14 +117,62 @@
             transition: all 0.3s;
         }
 
-        #status {
-            text-align: center;
-            margin: 5px 0 10px 0;
-            font-size: 1rem;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        #startBtn {
+            background: #10b981;
+            color: white;
+        }
+
+        #nextBtn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        #stopBtn {
+            background: #ef4444;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Mobile Layout: Stack Vertically */
+        @media (max-width: 768px) {
+            .video-container {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+                margin: 5px 0;
+            }
+
+            #online-count {
+                font-size: 0.8rem;
+                margin-bottom: 5px;
+            }
+
+            #status {
+                font-size: 0.9rem;
+                padding: 5px;
+                margin: 0 0 5px 0;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 5px;
+            }
         }
     </style>
 </head>
