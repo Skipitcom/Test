@@ -15,7 +15,10 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            /* Prevent scrolling */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,15 +26,18 @@
         }
 
         .container {
-            max-width: 1200px;
             width: 100%;
-            padding: 20px;
+            height: 100%;
+            max-width: 1200px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
         }
 
         h1 {
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 2.5rem;
+            margin: 5px 0;
+            font-size: 1.5rem;
         }
 
         #online-count {
@@ -67,9 +73,7 @@
 
         video {
             width: 100%;
-            height: 400px;
-            background: #000;
-            border-radius: 12px;
+            height: 100%;
             object-fit: cover;
         }
 
@@ -77,15 +81,23 @@
             transform: scaleX(-1);
         }
 
+        .video-wrapper {
+            position: relative;
+            flex: 1;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
         .controls {
             display: flex;
             justify-content: center;
             gap: 15px;
-            flex-wrap: wrap;
+            padding-bottom: 10px;
         }
 
         button {
-            padding: 15px 30px;
+            padding: 12px 25px;
             font-size: 16px;
             font-weight: 600;
             border: none;
@@ -94,48 +106,14 @@
             transition: all 0.3s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        #startBtn {
-            background: #10b981;
-            color: white;
-        }
-
-        #nextBtn {
-            background: #f59e0b;
-            color: white;
-        }
-
-        #stopBtn {
-            background: #ef4444;
-            color: white;
-        }
-
         #status {
             text-align: center;
-            margin: 20px 0;
-            font-size: 18px;
-            padding: 15px;
+            margin: 5px 0 10px 0;
+            font-size: 1rem;
+            padding: 8px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             backdrop-filter: blur(10px);
-        }
-
-        .label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        .video-wrapper {
-            position: relative;
         }
     </style>
 </head>
