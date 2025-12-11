@@ -285,10 +285,13 @@
                 });
 
                 socket.on('user-left', () => {
-                    updateStatus('Stranger disconnected. Click Next to find someone else.');
+                    updateStatus('Stranger skipped. Searching for new partner...');
                     closePeerConnection();
-                    nextBtn.disabled = false;
-                    stopBtn.disabled = false;
+
+                    // Auto-search for next match
+                    setTimeout(() => {
+                        socket.emit('find-match');
+                    }, 500);
                 });
 
             } catch (error) {
