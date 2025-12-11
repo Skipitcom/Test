@@ -65,6 +65,10 @@
             object-fit: cover;
         }
 
+        #localVideo {
+            transform: scaleX(-1);
+        }
+
         .controls {
             display: flex;
             justify-content: center;
@@ -268,9 +272,10 @@
                 });
 
                 socket.on('user-left', () => {
-                    updateStatus('Stranger disconnected');
+                    updateStatus('Stranger disconnected. Click Next to find someone else.');
                     closePeerConnection();
-                    nextBtn.disabled = true;
+                    nextBtn.disabled = false;
+                    stopBtn.disabled = false;
                 });
 
             } catch (error) {
