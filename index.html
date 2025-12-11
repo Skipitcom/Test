@@ -320,7 +320,11 @@
             closePeerConnection();
             nextBtn.disabled = true;
             updateStatus('Looking for next match...');
-            socket.emit('find-match');
+            socket.emit('next');
+            // Important: Re-trigger matching after leaving room
+            setTimeout(() => {
+                socket.emit('find-match');
+            }, 500);
         }
 
         function stop() {
