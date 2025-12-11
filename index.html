@@ -186,7 +186,22 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const backendUrl = urlParams.get('backend') || 'http://localhost:4000';
                 console.log('Connecting to backend:', backendUrl);
-                socket = io(backendUrl);
+
+                socket = io(backendUrl, {
+                    transports: ['websocket', 'polling'],
+                    extraHeaders: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+
+                socket.on('connect_error', (error) => {
+                    console.error('❌ Connection error:', error);
+                    updateStatus('Connection failed: ' + error.message);
+                });
+
+                socket.on('error', (error) => {
+                    console.error('❌ Socket error:', error);
+                });
 
                 socket.on('connect', () => {
                     updateStatus('Connected! Looking for a match...');
