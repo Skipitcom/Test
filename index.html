@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Test - Random Video Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .video-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        video {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        #startBtn {
+            background: #10b981;
+            color: white;
+        }
+        
+        #nextBtn {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        #stopBtn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        #status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .video-wrapper {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎥 WebRTC Test Chat</h1>
+        
+        <div id="status">Click "Start" to begin</div>
+        
+        <div class="video-container">
+            <div class="video-wrapper">
+                <span class="label">You</span>
+                <video id="localVideo" autoplay muted></video>
+            </div>
+            <div class="video-wrapper">
+                <span class="label">Stranger</span>
+                <video id="remoteVideo" autoplay></video>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">Start</button>
+            <button id="nextBtn" disabled>Next</button>
+            <button id="stopBtn" disabled>Stop</button>
+        </div>
+    </div>
+    
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        
+        let socket;
+        let localStream;
+        let peerConnection;
+        let currentRoom;
+        
+        // ICE Servers Configuration (STUN/TURN)
+        const ICE_SERVERS = {
+            iceServers: [
+                // Google's free STUN servers
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                // Cloudflare's TURN server (free tier)
+                {
+                    urls: 'turn:turn.cloudflare.com:3478',
+                    username: 'cloudflare',
+                    credential: 'cloudflare'
+                }
+            ]
+        };
+        
+        function updateStatus(message) {
+            status.textContent = message;
+            console.log(message);
+        }
+        
+        async function startChat() {
+            try {
+                // Get user media
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+                
+                localVideo.srcObject = localStream;
+                updateStatus('Camera enabled. Connecting to server...');
+                
+                // Connect to signaling server
+                socket = io('http://localhost:4000');
+                
+                socket.on('connect', () => {
+                    updateStatus('Connected! Looking for a match...');
+                    socket.emit('find-match');
+                    
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                });
+                
+                socket.on('waiting', () => {
+                    updateStatus('Waiting for someone to connect...');
+                });
+                
+                socket.on('send-offer', async ({ roomId }) => {
+                    currentRoom = roomId;
+                    updateStatus('Match found! Connecting...');
+                    await createPeerConnection();
+                    
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+                    socket.emit('offer', { sdp: offer, roomId });
+                });
+                
+                socket.on('offer', async ({ sdp, roomId }) => {
+                    currentRoom = roomId;
+                    updateStatus('Match found! Connecting...');
+                    await createPeerConnection();
+                    
+                    await peerConnection.setRemoteDescription(sdp);
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    socket.emit('answer', { sdp: answer, roomId });
+                    
+                    updateStatus('✅ Connected!');
+                    nextBtn.disabled = false;
+                });
+                
+                socket.on('answer', async ({ sdp }) => {
+                    await peerConnection.setRemoteDescription(sdp);
+                    updateStatus('✅ Connected!');
+                    nextBtn.disabled = false;
+                });
+                
+                socket.on('add-ice-candidate', async ({ candidate }) => {
+                    if (peerConnection) {
+                        await peerConnection.addIceCandidate(candidate);
+                    }
+                });
+                
+                socket.on('user-left', () => {
+                    updateStatus('Stranger disconnected');
+                    closePeerConnection();
+                    nextBtn.disabled = true;
+                });
+                
+            } catch (error) {
+                updateStatus('❌ Error: ' + error.message);
+                console.error(error);
+            }
+        }
+        
+        async function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(ICE_SERVERS);
+            
+            // Add local tracks
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+            
+            // Handle incoming tracks
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+            
+            // Send ICE candidates
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate && currentRoom) {
+                    socket.emit('add-ice-candidate', {
+                        candidate: event.candidate,
+                        roomId: currentRoom
+                    });
+                }
+            };
+            
+            // Monitor connection state
+            peerConnection.onconnectionstatechange = () => {
+                console.log('Connection state:', peerConnection.connectionState);
+            };
+        }
+        
+        function closePeerConnection() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            remoteVideo.srcObject = null;
+        }
+        
+        function next() {
+            closePeerConnection();
+            nextBtn.disabled = true;
+            updateStatus('Looking for next match...');
+            socket.emit('find-match');
+        }
+        
+        function stop() {
+            closePeerConnection();
+            
+            if (socket) {
+                socket.disconnect();
+            }
+            
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            
+            localVideo.srcObject = null;
+            updateStatus('Stopped');
+            
+            startBtn.disabled = false;
+            nextBtn.disabled = true;
+            stopBtn.disabled = true;
+        }
+        
+        startBtn.onclick = startChat;
+        nextBtn.onclick = next;
+        stopBtn.onclick = stop;
+    </script>
+</body>
+</html>
