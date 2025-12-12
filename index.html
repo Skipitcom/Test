@@ -16,6 +16,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
+            height: 100dvh;
+            /* Dynamic Viewport Height for Mobile */
             margin: 0;
             overflow: hidden;
             /* Prevent scrolling */
@@ -34,40 +36,44 @@
             flex-direction: column;
         }
 
-        /* Compact Header */
-        h1 {
+        /* 1. Header Group (Always Visible) */
+        .header-group {
+            flex-shrink: 0;
             text-align: center;
-            margin: 5px 0;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            margin: 0;
             font-size: 1.5rem;
-            /* Reduced from 2.5rem */
         }
 
         #online-count {
-            text-align: center;
-            margin-bottom: 5px;
+            margin: 2px 0 5px 0;
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.9rem;
         }
 
         #status {
-            text-align: center;
-            margin: 5px 0 10px 0;
             font-size: 1rem;
             padding: 8px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             backdrop-filter: blur(10px);
+            display: inline-block;
+            width: 100%;
+            max-width: 400px;
         }
 
-        /* Flexible Video Container */
+        /* 2. Video Area (Flexible) */
         .video-container {
             display: flex;
             flex: 1;
-            /* Take all remaining space */
+            /* Grow to fill space */
             gap: 10px;
             min-height: 0;
-            /* Critical for flex scrolling */
-            margin-bottom: 10px;
+            /* Critical for scrolling inside flex */
+            margin: 5px 0 10px 0;
         }
 
         .video-wrapper {
@@ -76,6 +82,9 @@
             background: #000;
             border-radius: 12px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video {
@@ -93,33 +102,31 @@
             top: 10px;
             left: 10px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
             z-index: 10;
         }
 
+        /* 3. Footer Controls (Always Visible) */
         .controls {
+            flex-shrink: 0;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             padding-bottom: 5px;
-            /* Minimal padding at bottom */
         }
 
         button {
-            padding: 12px 25px;
+            padding: 12px 20px;
             font-size: 16px;
             font-weight: 600;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            flex: 1;
+            max-width: 150px;
         }
 
         #startBtn {
@@ -137,6 +144,11 @@
             color: white;
         }
 
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -151,22 +163,15 @@
 
             h1 {
                 font-size: 1.2rem;
-                margin: 5px 0;
-            }
-
-            #online-count {
-                font-size: 0.8rem;
-                margin-bottom: 5px;
             }
 
             #status {
                 font-size: 0.9rem;
-                padding: 5px;
-                margin: 0 0 5px 0;
+                padding: 6px;
             }
 
             button {
-                padding: 10px 20px;
+                padding: 12px;
                 font-size: 14px;
             }
 
@@ -179,22 +184,26 @@
 
 <body>
     <div class="container">
-        <h1>🎥 WebRTC Test Chat</h1>
-        <div id="online-count">Loading online users...</div>
+        <!-- Header Group -->
+        <div class="header-group">
+            <h1>🎥 WebRTC Test</h1>
+            <div id="online-count">Loading users...</div>
+            <div id="status">Click "Start" to begin</div>
+        </div>
 
-        <div id="status">Click "Start" to begin</div>
-
+        <!-- Flexible Video Area -->
         <div class="video-container">
-            <div class="video-wrapper">
-                <span class="label">You</span>
-                <video id="localVideo" autoplay muted></video>
-            </div>
             <div class="video-wrapper">
                 <span class="label">Stranger</span>
                 <video id="remoteVideo" autoplay></video>
             </div>
+            <div class="video-wrapper">
+                <span class="label">You</span>
+                <video id="localVideo" autoplay muted></video>
+            </div>
         </div>
 
+        <!-- Footer Controls -->
         <div class="controls">
             <button id="startBtn">Start</button>
             <button id="nextBtn" disabled>Next</button>
