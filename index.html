@@ -259,7 +259,7 @@
                 // Connect to signaling server
                 // Use ?backend=https://your-ngrok-url for production
                 const urlParams = new URLSearchParams(window.location.search);
-                const backendUrl = urlParams.get('backend') || 'http://localhost:4000';
+                const backendUrl = urlParams.get('backend') || 'https://api.skipit.site';
                 console.log('Connecting to backend:', backendUrl);
 
                 socket = io(backendUrl, {
